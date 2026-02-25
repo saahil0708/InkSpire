@@ -46,9 +46,41 @@ export default function AdminDashboard() {
     const [scores, setScores] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
+    // Auth states
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [passwordInput, setPasswordInput] = useState('');
+    const [authError, setAuthError] = useState('');
+
     // Dialog states
     const [openRoundDialog, setOpenRoundDialog] = useState(false);
     const [newRoundName, setNewRoundName] = useState('');
+
+    useEffect(() => {
+        const auth = localStorage.getItem('inkspire_admin_auth');
+        if (auth === 'true') {
+            setIsAuthenticated(true);
+        } else {
+            setLoading(false);
+        }
+    }, []);
+
+    const handleLogin = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (passwordInput === 'InkSpire@SVIET') {
+            setIsAuthenticated(true);
+            localStorage.setItem('inkspire_admin_auth', 'true');
+            setAuthError('');
+        } else {
+            setAuthError('Incorrect password');
+        }
+    };
+
+    const handleLogout = () => {
+        setIsAuthenticated(false);
+        localStorage.removeItem('inkspire_admin_auth');
+        setPasswordInput('');
+        setTabIndex(0);
+    };
 
     const fetchInitialData = async () => {
         try {
@@ -76,8 +108,10 @@ export default function AdminDashboard() {
     };
 
     useEffect(() => {
-        fetchInitialData();
-    }, []);
+        if (isAuthenticated) {
+            fetchInitialData();
+        }
+    }, [isAuthenticated]);
 
     useEffect(() => {
         if (tabIndex > 0 && rounds[tabIndex - 1]) {
@@ -163,15 +197,69 @@ export default function AdminDashboard() {
     ];
 
     if (loading) {
-        return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>;
+        return (
+            <ThemeProvider theme={darkTheme}>
+                <Box sx={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', bgcolor: 'background.default' }}>
+                    <CircularProgress color="primary" size={60} />
+                </Box>
+            </ThemeProvider>
+        );
+    }
+
+    if (!isAuthenticated) {
+        return (
+            <ThemeProvider theme={darkTheme}>
+                <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default' }}>
+                    <Paper sx={{ p: 5, width: 400, textAlign: 'center', bgcolor: 'background.paper', borderRadius: 2 }}>
+                        <Typography variant="h5" color="primary" gutterBottom fontWeight="bold" fontFamily="Azonix, sans-serif">
+                            Admin Login
+                        </Typography>
+                        <form onSubmit={handleLogin}>
+                            <TextField
+                                fullWidth
+                                type="password"
+                                label="Password"
+                                variant="outlined"
+                                value={passwordInput}
+                                onChange={(e) => setPasswordInput(e.target.value)}
+                                sx={{ my: 3 }}
+                                error={!!authError}
+                                helperText={authError}
+                            />
+                            <Button fullWidth variant="contained" color="primary" type="submit" size="large" sx={{ fontWeight: 'bold' }}>
+                                Unlock Dashboard
+                            </Button>
+                        </form>
+                    </Paper>
+                </Box>
+            </ThemeProvider>
+        );
     }
 
     return (
         <ThemeProvider theme={darkTheme}>
-            <Box sx={{ p: 4, maxWidth: '100%', margin: 'auto', minHeight: '100vh', bgcolor: 'background.default', color: 'text.primary' }}>
-                <Typography variant="h4" gutterBottom fontWeight="bold" fontFamily="Azonix, sans-serif" color="primary">
-                    Tournament Admin Dashboard
-                </Typography>
+            <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: '100%', margin: 'auto', minHeight: '100vh', bgcolor: 'background.default', color: 'text.primary', position: 'relative' }}>
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, mb: 4, gap: 2 }}>
+                    <Typography variant="h4" fontWeight="bold" fontFamily="Azonix, sans-serif" color="primary">
+                        Tournament Admin Dashboard
+                    </Typography>
+                </Box>
+
+                {/* Floating Logout Button for guaranteed visibility */}
+                <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={handleLogout}
+                    sx={{
+                        fontWeight: 'bold',
+                        position: 'absolute',
+                        top: { xs: 16, md: 32 },
+                        right: { xs: 16, md: 32 },
+                        zIndex: 100
+                    }}
+                >
+                    Logout
+                </Button>
 
                 <Paper sx={{ mb: 4 }}>
                     <Tabs value={tabIndex} onChange={(e, newValue) => setTabIndex(newValue)} variant="scrollable" scrollButtons="auto">
