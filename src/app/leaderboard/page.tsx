@@ -19,7 +19,7 @@ const posterTheme = createTheme({
     palette: {
         mode: 'light',
         primary: { main: '#4e342e' },
-        background: { default: '#fbf8f1', paper: '#ffffff' }, // Matching the poster beige
+        background: { default: '#e3dccf', paper: '#f4ecd8' }, // Darker, less flashy beige
         text: { primary: '#3e2723', secondary: '#5d4037' }
     },
     typography: { fontFamily: '"Azonix", "Poppins", sans-serif' },
@@ -35,6 +35,13 @@ const TEAM_CONFIG: Record<string, { color: string, logo: StaticImageData | strin
 
 export default function LeaderboardDisplay() {
     const [leaderboard, setLeaderboard] = useState<any[]>([]);
+    const [currentTime, setCurrentTime] = useState<Date | null>(null);
+
+    useEffect(() => {
+        setCurrentTime(new Date());
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     const fetchLeaderboard = async () => {
         try {
@@ -58,10 +65,10 @@ export default function LeaderboardDisplay() {
         <ThemeProvider theme={posterTheme}>
             <Box sx={{
                 minHeight: '100vh',
-                backgroundColor: '#fbf8f1',
+                backgroundColor: '#e3dccf', // Slightly darker beige
                 backgroundImage: `
-                    linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px)
+                    linear-gradient(rgba(0, 0, 0, 0.08) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0, 0, 0, 0.08) 1px, transparent 1px)
                 `,
                 backgroundSize: '40px 40px',
                 color: 'text.primary',
@@ -100,6 +107,22 @@ export default function LeaderboardDisplay() {
                     />
                 </Box>
 
+                {/* Top-Right Date/Time Section */}
+                <Box sx={{
+                    position: 'absolute',
+                    top: { xs: 16, md: 32 },
+                    right: { xs: 16, md: 32 },
+                    zIndex: 20,
+                    textAlign: 'right'
+                }}>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#4e342e', mb: 0.5, textTransform: 'uppercase' }}>
+                        {currentTime ? currentTime.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : ''}
+                    </Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#d32f2f' }}>
+                        {currentTime ? currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : ''}
+                    </Typography>
+                </Box>
+
                 <Typography
                     variant="h2"
                     align="center"
@@ -113,7 +136,7 @@ export default function LeaderboardDisplay() {
                         zIndex: 10
                     }}
                 >
-                    LEADERBOARD
+                    SCOREBOARD
                 </Typography>
 
                 <Box sx={{
