@@ -139,7 +139,7 @@ export default function LeaderboardDisplay() {
                 `,
                 backgroundSize: '40px 40px',
                 color: 'text.primary',
-                p: { xs: 2, md: 4 },
+                p: { xs: 2, md: 3 },
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -273,7 +273,7 @@ export default function LeaderboardDisplay() {
                         gap: { xs: 2, md: 8 },
                         width: '100%',
                         borderTop: '4px solid rgba(0, 0, 0, 0.2)', // Darker border for light mode
-                        pt: 2 // Decreased top padding
+                        // pt: 2 // Decreased top padding
                     }}>
                         {leaderboard.map((team) => {
                             const config = TEAM_CONFIG[team.name] || { color: '#38bdf8', logo: '⭐' };
