@@ -22,22 +22,19 @@ router.get("/history", async (req, res) => {
 
         const history = [];
 
-        // We track cumulative scores as we iterate through rounds
-        let cumulativeScores = {};
-        teams.forEach(t => cumulativeScores[t._id.toString()] = 0);
-
+        // We track scores per round
         for (const round of rounds) {
             const scores = await Score.find({ roundId: round._id }).populate("teamId");
             const dataPoint = { time: round.name };
 
-            scores.forEach(s => {
-                const teamName = s.teamId.name;
-                cumulativeScores[s.teamId._id.toString()] += s.scoreValue;
+            // Initialize all teams to 0 for this round
+            teams.forEach(t => {
+                dataPoint[t.name] = 0;
             });
 
-            // Populate the dataPoint with current cumulative scores
-            teams.forEach(t => {
-                dataPoint[t.name] = cumulativeScores[t._id.toString()];
+            // Set the actual round score if they have one
+            scores.forEach(s => {
+                dataPoint[s.teamId.name] = s.scoreValue;
             });
 
             history.push(dataPoint);
