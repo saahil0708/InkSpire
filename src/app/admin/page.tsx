@@ -1,5 +1,6 @@
 "use client";
 
+import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import {
     Box,
@@ -36,7 +37,7 @@ const darkTheme = createTheme({
     },
 });
 
-const API_BASE_URL = 'http://localhost:5000/api/admin';
+const API_BASE_URL = 'https://inkspire-server.onrender.com/api/admin';
 
 export default function AdminDashboard() {
     const [tabIndex, setTabIndex] = useState(0);
@@ -53,13 +54,11 @@ export default function AdminDashboard() {
         try {
             setLoading(true);
             const [roundsRes, teamsRes] = await Promise.all([
-                fetch(`${API_BASE_URL}/rounds`),
-                fetch(`${API_BASE_URL}/teams`)
+                axios.get(`${API_BASE_URL}/rounds`),
+                axios.get(`${API_BASE_URL}/teams`)
             ]);
-            const roundsData = await roundsRes.json();
-            const teamsData = await teamsRes.json();
-            setRounds(roundsData);
-            setTeams(teamsData);
+            setRounds(roundsRes.data);
+            setTeams(teamsRes.data);
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
@@ -69,9 +68,8 @@ export default function AdminDashboard() {
 
     const fetchScoresForRound = async (roundId: string) => {
         try {
-            const res = await fetch(`${API_BASE_URL}/scores/${roundId}`);
-            const data = await res.json();
-            setScores(data);
+            const res = await axios.get(`${API_BASE_URL}/scores/${roundId}`);
+            setScores(res.data);
         } catch (error) {
             console.error("Error fetching scores:", error);
         }
@@ -89,16 +87,10 @@ export default function AdminDashboard() {
 
     const handleCreateRound = async () => {
         try {
-            const res = await fetch(`${API_BASE_URL}/rounds`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: newRoundName })
-            });
-            if (res.ok) {
-                setNewRoundName('');
-                setOpenRoundDialog(false);
-                fetchInitialData();
-            }
+            await axios.post(`${API_BASE_URL}/rounds`, { name: newRoundName });
+            setNewRoundName('');
+            setOpenRoundDialog(false);
+            fetchInitialData();
         } catch (error) {
             console.error("Error creating round:", error);
         }
@@ -116,11 +108,7 @@ export default function AdminDashboard() {
     const handleSaveScores = async (roundId: string) => {
         try {
             const promises = Object.entries(tempScores).map(([teamId, scoreValue]) =>
-                fetch(`${API_BASE_URL}/scores`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ teamId, roundId, scoreValue })
-                })
+                axios.post(`${API_BASE_URL}/scores`, { teamId, roundId, scoreValue })
             );
             await Promise.all(promises);
             setTempScores({}); // Clear temp scores after save
@@ -135,13 +123,9 @@ export default function AdminDashboard() {
         if (!window.confirm("Are you sure you want to delete this round? All associated scores will be lost and total rankings will be recalculated.")) return;
 
         try {
-            const res = await fetch(`${API_BASE_URL}/rounds/${roundId}`, {
-                method: 'DELETE'
-            });
-            if (res.ok) {
-                setTabIndex(0); // Reset to global view
-                fetchInitialData();
-            }
+            await axios.delete(`${API_BASE_URL}/rounds/${roundId}`);
+            setTabIndex(0); // Reset to global view
+            fetchInitialData();
         } catch (error) {
             console.error("Error deleting round:", error);
         }

@@ -10,6 +10,7 @@ import WN from '../../Images/wn.png';
 import BV from '../../Images/bv.png';
 import GG from '../../Images/GG.png';
 import Image, { StaticImageData } from 'next/image';
+import axios from 'axios';
 
 
 const darkTheme = createTheme({
@@ -34,9 +35,8 @@ export default function LeaderboardDisplay() {
 
     const fetchLeaderboard = async () => {
         try {
-            const res = await fetch('http://localhost:5000/api/leaderboard');
-            const data = await res.json();
-            setLeaderboard(data);
+            const res = await axios.get('https://inkspire-server.onrender.com/api/leaderboard');
+            setLeaderboard(res.data);
         } catch (error) {
             console.error("Failed to fetch leaderboard", error);
         }
