@@ -158,20 +158,20 @@ export default function LeaderboardDisplay() {
             )}
             <style>{`
                 .leader-line {
-                    animation: pulseGlow 1.5s infinite alternate !important;
+                    animation: pulseGlow 0.8s infinite alternate ease-in-out !important;
+                    transform-box: fill-box;
+                    transform-origin: bottom center;
                 }
                 @keyframes pulseGlow {
                     0% {
-                        opacity: 0.6;
+                        fill-opacity: 0.6;
                         filter: drop-shadow(0 0 5px currentColor);
                         transform: scaleY(1);
-                        transform-origin: bottom;
                     }
                     100% {
-                        opacity: 1;
+                        fill-opacity: 1;
                         filter: drop-shadow(0 0 25px currentColor);
                         transform: scaleY(1.03);
-                        transform-origin: bottom;
                     }
                 }
                 @keyframes zoomIn {
