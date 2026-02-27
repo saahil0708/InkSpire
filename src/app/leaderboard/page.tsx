@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Box, Typography } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { motion } from 'framer-motion';
@@ -41,6 +41,40 @@ export default function LeaderboardDisplay() {
     const [currentTime, setCurrentTime] = useState<Date | null>(null);
     const [history, setHistory] = useState<any[]>([]);
     const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+    const [celebratingRound, setCelebratingRound] = useState<{ roundName: string, winners: any[] } | null>(null);
+    const prevRevealedRounds = useRef<Set<string>>(new Set());
+    const initialLoadDone = useRef(false);
+
+    useEffect(() => {
+        if (history.length === 0) return;
+
+        if (!initialLoadDone.current) {
+            prevRevealedRounds.current = new Set(history.filter(h => h.isRevealed).map(h => h.time));
+            initialLoadDone.current = true;
+            return;
+        }
+
+        const currentRevealed = new Set(history.filter(h => h.isRevealed).map(h => h.time));
+        const newlyRevealed = [...currentRevealed].filter(r => !prevRevealedRounds.current.has(r));
+
+        if (newlyRevealed.length > 0) {
+            // Trigger celebration for the newly revealed round
+            const roundToCelebrate = newlyRevealed[newlyRevealed.length - 1];
+            const roundData = history.find(h => h.time === roundToCelebrate);
+            if (roundData && leaderboard.length > 0) {
+                const highestScore = Math.max(0, ...leaderboard.map(t => typeof roundData[t.name] === 'number' ? roundData[t.name] : 0));
+                const winners = leaderboard.filter(t => roundData[t.name] === highestScore);
+                setCelebratingRound({ roundName: roundToCelebrate, winners });
+
+                // Clear celebration after 5 seconds
+                setTimeout(() => {
+                    setCelebratingRound(null);
+                }, 5000);
+            }
+        }
+
+        prevRevealedRounds.current = currentRevealed;
+    }, [history, leaderboard]);
 
     useEffect(() => {
         setWindowSize({ width: window.innerWidth, height: window.innerHeight });
@@ -92,6 +126,35 @@ export default function LeaderboardDisplay() {
                     gravity={0.15}
                     style={{ zIndex: 9999, position: 'fixed' }}
                 />
+            )}
+            {celebratingRound && windowSize.width > 0 && (
+                <Box sx={{
+                    position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+                    bgcolor: 'rgba(0,0,0,0.85)', zIndex: 99999, display: 'flex', flexDirection: 'column',
+                    alignItems: 'center', justifyContent: 'center', animation: 'zoomIn 0.5s ease-out'
+                }}>
+                    <Confetti width={windowSize.width} height={windowSize.height} numberOfPieces={800} gravity={0.2} />
+                    <Typography variant="h2" sx={{ color: '#fff', mb: 4, letterSpacing: 3, fontWeight: 'bold' }}>
+                        WINNER OF {celebratingRound.roundName}
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
+                        {celebratingRound.winners.map((team: any) => {
+                            const config = TEAM_CONFIG[team.name] || { color: '#38bdf8', logo: '⭐' };
+                            return (
+                                <Box key={team._id} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                    {typeof config.logo === 'string' ? (
+                                        <Typography sx={{ fontSize: '10rem', filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.5))' }}>{config.logo}</Typography>
+                                    ) : (
+                                        <Image src={config.logo} alt={team.name} width={250} height={250} style={{ filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.5))' }} />
+                                    )}
+                                    <Typography variant="h1" sx={{ mt: 3, fontWeight: 'bold', color: config.color, textShadow: '0 0 20px rgba(255,255,255,0.3)', textAlign: 'center' }}>
+                                        {team.name}
+                                    </Typography>
+                                </Box>
+                            );
+                        })}
+                    </Box>
+                </Box>
             )}
             <style>{`
                 .leader-line {
@@ -243,7 +306,7 @@ export default function LeaderboardDisplay() {
                                                             ...leaderboard.map(t => typeof entry[t.name] === 'number' ? entry[t.name] : 0)
                                                         );
                                                         const thisScore = typeof entry[team.name] === 'number' ? entry[team.name] : 0;
-                                                        const isRoundWinner = thisScore === highestInRound && highestInRound > 0;
+                                                        const isRoundWinner = thisScore === highestInRound && highestInRound > 0 && entry.isRevealed;
 
                                                         return (
                                                             <Cell
@@ -381,7 +444,7 @@ export default function LeaderboardDisplay() {
 
                         {/* Round Winners Row */}
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 4, width: '90%', animation: 'zoomIn 1.4s ease-out' }}>
-                            {history.map((round) => {
+                            {history.filter(r => r.isRevealed).map((round) => {
                                 // Calculate highest score in this round
                                 const highestInRound = Math.max(0, ...leaderboard.map(t => typeof round[t.name] === 'number' ? round[t.name] : 0));
                                 if (highestInRound === 0) return null; // Skip if no scores yet

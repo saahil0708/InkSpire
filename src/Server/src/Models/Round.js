@@ -5,6 +5,10 @@ const roundSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true
+    },
+    isRevealed: {
+        type: Boolean,
+        default: false
     }
 }, { timestamps: true });
 

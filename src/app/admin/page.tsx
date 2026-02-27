@@ -184,6 +184,15 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleToggleReveal = async (roundId: string) => {
+        try {
+            await axios.post(`${API_BASE_URL}/rounds/${roundId}/reveal`);
+            fetchInitialData(false); // background refresh to update round status
+        } catch (error) {
+            console.error("Error toggling reveal status:", error);
+        }
+    };
+
     const getScoreForTeam = (teamId: string) => {
         if (tempScores[teamId] !== undefined) return tempScores[teamId];
         const scoreDoc = scores.find(s => s.teamId?._id === teamId || s.teamId === teamId);
@@ -334,14 +343,23 @@ export default function AdminDashboard() {
                                     <DeleteIcon />
                                 </IconButton>
                             </Box>
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={() => handleSaveScores(rounds[tabIndex - 1]._id)}
-                                disabled={Object.keys(tempScores).length === 0}
-                            >
-                                Save Scores
-                            </Button>
+                            <Box sx={{ display: 'flex', gap: 2 }}>
+                                <Button
+                                    variant={rounds[tabIndex - 1].isRevealed ? "contained" : "outlined"}
+                                    color={rounds[tabIndex - 1].isRevealed ? "success" : "info"}
+                                    onClick={() => handleToggleReveal(rounds[tabIndex - 1]._id)}
+                                >
+                                    {rounds[tabIndex - 1].isRevealed ? "Winner Announced 🎉" : "Announce Winner"}
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => handleSaveScores(rounds[tabIndex - 1]._id)}
+                                    disabled={Object.keys(tempScores).length === 0}
+                                >
+                                    Save Scores
+                                </Button>
+                            </Box>
                         </Box>
                         <Paper sx={{ height: 600, width: '100%', mt: 2 }}>
                             <DataGrid

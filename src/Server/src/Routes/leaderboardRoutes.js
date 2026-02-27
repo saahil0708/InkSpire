@@ -25,7 +25,7 @@ router.get("/history", async (req, res) => {
         // We track scores per round
         for (const round of rounds) {
             const scores = await Score.find({ roundId: round._id }).populate("teamId");
-            const dataPoint = { time: round.name };
+            const dataPoint = { time: round.name, isRevealed: round.isRevealed };
 
             // Initialize all teams to 0 for this round
             teams.forEach(t => {

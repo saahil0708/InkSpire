@@ -48,6 +48,21 @@ router.delete("/rounds/:id", async (req, res) => {
     }
 });
 
+router.post("/rounds/:id/reveal", async (req, res) => {
+    try {
+        const roundId = req.params.id;
+        const round = await Round.findById(roundId);
+        if (!round) {
+            return res.status(404).json({ message: "Round not found" });
+        }
+        round.isRevealed = !round.isRevealed;
+        await round.save();
+        res.json({ message: "Round reveal status toggled", round });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // --- Teams ---
 router.get("/teams", async (req, res) => {
     try {
