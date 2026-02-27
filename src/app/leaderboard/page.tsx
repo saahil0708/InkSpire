@@ -63,12 +63,8 @@ export default function LeaderboardDisplay() {
             ]);
             setLeaderboard(leaderboardRes.data);
 
-            // Always add a starting zero-point so lines come from the bottom
-            const zeroPoint: any = { time: 'Start' };
-            leaderboardRes.data.forEach((t: any) => zeroPoint[t.name] = 0);
-
             const fetchedHistory = historyRes.data;
-            setHistory([zeroPoint, ...fetchedHistory]);
+            setHistory(fetchedHistory);
 
         } catch (error) {
             console.error("Failed to fetch leaderboard or history", error);
