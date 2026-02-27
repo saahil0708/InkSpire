@@ -158,11 +158,21 @@ export default function LeaderboardDisplay() {
             )}
             <style>{`
                 .leader-line {
-                    animation: blinkLine 1s infinite alternate !important;
+                    animation: pulseGlow 1.5s infinite alternate !important;
                 }
-                @keyframes blinkLine {
-                    0% { opacity: 1; }
-                    100% { opacity: 0.2; }
+                @keyframes pulseGlow {
+                    0% {
+                        opacity: 0.6;
+                        filter: drop-shadow(0 0 5px currentColor);
+                        transform: scaleY(1);
+                        transform-origin: bottom;
+                    }
+                    100% {
+                        opacity: 1;
+                        filter: drop-shadow(0 0 25px currentColor);
+                        transform: scaleY(1.03);
+                        transform-origin: bottom;
+                    }
                 }
                 @keyframes zoomIn {
                     0% { transform: scale(0.5); opacity: 0; }
