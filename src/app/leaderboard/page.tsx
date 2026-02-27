@@ -105,6 +105,10 @@ export default function LeaderboardDisplay() {
                     0% { opacity: 1; }
                     100% { opacity: 0.2; }
                 }
+                @keyframes zoomIn {
+                    0% { transform: scale(0.5); opacity: 0; }
+                    100% { transform: scale(1); opacity: 1; }
+                }
             `}</style>
             <Box sx={{
                 minHeight: '100vh',
@@ -166,147 +170,149 @@ export default function LeaderboardDisplay() {
                     </Typography>
                 </Box>
 
-                <Typography
-                    variant="h2"
-                    align="center"
-                    gutterBottom
-                    sx={{
-                        fontWeight: 'bold',
-                        color: '#4e342e', // Match poster text
-                        textShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                        mb: 2, // reduced margin to fit on one screen
+                {!hasWinner ? (
+                    <>
+                        <Typography
+                            variant="h2"
+                            align="center"
+                            gutterBottom
+                            sx={{
+                                fontWeight: 'bold',
+                                color: '#4e342e', // Match poster text
+                                textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                mb: 2, // reduced margin to fit on one screen
 
-                        zIndex: 10
-                    }}
-                >
-                    SCOREBOARD
-                </Typography>
+                                zIndex: 10
+                            }}
+                        >
+                            SCOREBOARD
+                        </Typography>
 
-                <Box sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    width: '100%',
-                    maxWidth: 1600,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    flexGrow: 1,
-                    position: 'relative',
-                    zIndex: 5,
-                    gap: 2 // Reduced gap to keep tightly packed on 1 screen
-                }}>
-                    {/* The Main Graph - Grouped Bar Chart */}
-                    <Box sx={{ width: '100%', height: '40vh', position: 'relative', mt: 1 }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={history} margin={{ top: 30, right: 20, left: 0, bottom: 5 }} barGap={4} barSize={20}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.15)" />
-                                <XAxis
-                                    dataKey="time"
-                                    tick={{ fill: '#4e342e', fontWeight: 'bold', fontSize: 12 }}
-                                    tickLine={false}
-                                    axisLine={{ stroke: '#4e342e', strokeWidth: 2 }}
-                                    dy={10}
-                                    interval={0}
-                                />
-                                <YAxis
-                                    tick={{ fill: '#4e342e', fontWeight: 'bold' }}
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tickCount={6} // Helps ensure regular intervals like 0, 10, 20
-                                    allowDecimals={false}
-                                />
-                                <Tooltip
-                                    cursor={{ fill: 'rgba(0,0,0,0.05)' }}
-                                    contentStyle={{ backgroundColor: '#f4ecd8', borderRadius: '8px', border: '1px solid #4e342e' }}
-                                    itemStyle={{ fontWeight: 'bold' }}
-                                />
-                                { /* Add a defs block for the glow filter */}
-                                <defs>
-                                    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                                        <feGaussianBlur stdDeviation="5" result="blur" />
-                                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                                    </filter>
-                                </defs>
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            width: '100%',
+                            maxWidth: 1600,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            flexGrow: 1,
+                            position: 'relative',
+                            zIndex: 5,
+                            gap: 2 // Reduced gap to keep tightly packed on 1 screen
+                        }}>
+                            {/* The Main Graph - Grouped Bar Chart */}
+                            <Box sx={{ width: '100%', height: '40vh', position: 'relative', mt: 1 }}>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={history} margin={{ top: 30, right: 20, left: 0, bottom: 5 }} barGap={4} barSize={20}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.15)" />
+                                        <XAxis
+                                            dataKey="time"
+                                            tick={{ fill: '#4e342e', fontWeight: 'bold', fontSize: 12 }}
+                                            tickLine={false}
+                                            axisLine={{ stroke: '#4e342e', strokeWidth: 2 }}
+                                            dy={10}
+                                            interval={0}
+                                        />
+                                        <YAxis
+                                            tick={{ fill: '#4e342e', fontWeight: 'bold' }}
+                                            tickLine={false}
+                                            axisLine={false}
+                                            tickCount={6} // Helps ensure regular intervals like 0, 10, 20
+                                            allowDecimals={false}
+                                        />
+                                        <Tooltip
+                                            cursor={{ fill: 'rgba(0,0,0,0.05)' }}
+                                            contentStyle={{ backgroundColor: '#f4ecd8', borderRadius: '8px', border: '1px solid #4e342e' }}
+                                            itemStyle={{ fontWeight: 'bold' }}
+                                        />
+                                        { /* Add a defs block for the glow filter */}
+                                        <defs>
+                                            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                                                <feGaussianBlur stdDeviation="5" result="blur" />
+                                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                                            </filter>
+                                        </defs>
+                                        {leaderboard.map((team, index) => {
+                                            const config = TEAM_CONFIG[team.name] || { color: '#38bdf8' };
+                                            const isLeader = team.totalScore === highestScore && highestScore > 0;
+
+                                            return (
+                                                <Bar
+                                                    key={team._id}
+                                                    className={isLeader ? "leader-line" : ""}
+                                                    dataKey={team.name}
+                                                    fill={config.color}
+                                                    radius={[4, 4, 0, 0]}
+                                                    isAnimationActive={true}
+                                                    style={isLeader ? { filter: 'url(#glow)' } : {}} // Add glow to leader
+                                                >
+                                                    <LabelList
+                                                        dataKey={team.name}
+                                                        position="top"
+                                                        fill={config.color}
+                                                        fontWeight="bold"
+                                                        fontSize={14}
+                                                        style={{ textShadow: '0px 1px 2px white' }}
+                                                        formatter={(val: any) => val > 0 ? val : ''}
+                                                    />
+                                                </Bar>
+                                            );
+                                        })}
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </Box>
+
+                            {/* Team Logos, Scores, and Dynamic Bars */}
+                            <Box sx={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'flex-end',
+                                gap: { xs: 2, md: 8 },
+                                width: '100%',
+                                height: '30vh', // Fixed height to allow dynamic bars to grow within
+                                borderTop: '4px solid rgba(0, 0, 0, 0.2)', // Darker border for light mode
+                                pt: 2,
+                                pb: 2
+                            }}>
                                 {leaderboard.map((team, index) => {
-                                    const config = TEAM_CONFIG[team.name] || { color: '#38bdf8' };
+                                    const config = TEAM_CONFIG[team.name] || { color: '#38bdf8', logo: '⭐' };
                                     const isLeader = team.totalScore === highestScore && highestScore > 0;
+                                    // Calculate proportional height for the bar (max 100%)
+                                    const normalizedHeight = maxScore > 0 ? (team.totalScore / maxScore) * 100 : 0;
+                                    const barHeight = `${Math.max(5, normalizedHeight)}%`;
 
                                     return (
-                                        <Bar
-                                            key={team._id}
-                                            className={isLeader ? "leader-line" : ""}
-                                            dataKey={team.name}
-                                            fill={config.color}
-                                            radius={[4, 4, 0, 0]}
-                                            isAnimationActive={true}
-                                            style={isLeader ? { filter: 'url(#glow)' } : {}} // Add glow to leader
-                                        >
-                                            <LabelList
-                                                dataKey={team.name}
-                                                position="top"
-                                                fill={config.color}
-                                                fontWeight="bold"
-                                                fontSize={14}
-                                                style={{ textShadow: '0px 1px 2px white' }}
-                                                formatter={(val: any) => val > 0 ? val : ''}
-                                            />
-                                        </Bar>
-                                    );
-                                })}
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </Box>
+                                        <Box key={team._id} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '20%', height: '100%', justifyContent: 'flex-end' }}>
 
-                    {/* Team Logos, Scores, and Dynamic Bars */}
-                    <Box sx={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'flex-end',
-                        gap: { xs: 2, md: 8 },
-                        width: '100%',
-                        height: '30vh', // Fixed height to allow dynamic bars to grow within
-                        borderTop: '4px solid rgba(0, 0, 0, 0.2)', // Darker border for light mode
-                        pt: 2,
-                        pb: 2
-                    }}>
-                        {leaderboard.map((team, index) => {
-                            const config = TEAM_CONFIG[team.name] || { color: '#38bdf8', logo: '⭐' };
-                            const isLeader = team.totalScore === highestScore && highestScore > 0;
-                            // Calculate proportional height for the bar (max 100%)
-                            const normalizedHeight = maxScore > 0 ? (team.totalScore / maxScore) * 100 : 0;
-                            const barHeight = `${Math.max(5, normalizedHeight)}%`;
+                                            {/* Score and Logo (sits immediately on top of the growing bar) */}
+                                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 10, mb: 1 }}>
 
-                            return (
-                                <Box key={team._id} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '20%', height: '100%', justifyContent: 'flex-end' }}>
+                                                {typeof config.logo === 'string' ? (
+                                                    <Typography variant="h1" className={isLeader ? "leader-line" : ""} sx={{ fontSize: '3rem', filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.8))' }}>
+                                                        {config.logo}
+                                                    </Typography>
+                                                ) : (
+                                                    <Image
+                                                        src={config.logo}
+                                                        className={isLeader ? "leader-line" : ""}
+                                                        alt={`${team.name} logo`}
+                                                        width={60}
+                                                        height={60}
+                                                        style={{ filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.8))' }}
+                                                    />
+                                                )}
+                                                {team.isWinner && (
+                                                    <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#ffea00', textShadow: '0 0 10px #ffb300, 0 0 20px #ffb300', mt: 1, letterSpacing: 2, animation: 'blinkLine 0.8s infinite alternate' }}>
+                                                        WINNER
+                                                    </Typography>
+                                                )}
+                                                <Typography variant="h3" sx={{ fontWeight: 'bold', color: config.color, textShadow: '0 2px 5px rgba(0,0,0,0.1)', mt: team.isWinner ? 0 : 0 }}>
+                                                    {team.totalScore}
+                                                </Typography>
+                                            </Box>
 
-                                    {/* Score and Logo (sits immediately on top of the growing bar) */}
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 10, mb: 1 }}>
-
-                                        {typeof config.logo === 'string' ? (
-                                            <Typography variant="h1" className={isLeader ? "leader-line" : ""} sx={{ fontSize: '3rem', filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.8))' }}>
-                                                {config.logo}
-                                            </Typography>
-                                        ) : (
-                                            <Image
-                                                src={config.logo}
-                                                className={isLeader ? "leader-line" : ""}
-                                                alt={`${team.name} logo`}
-                                                width={60}
-                                                height={60}
-                                                style={{ filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.8))' }}
-                                            />
-                                        )}
-                                        {team.isWinner && (
-                                            <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#ffea00', textShadow: '0 0 10px #ffb300, 0 0 20px #ffb300', mt: 1, letterSpacing: 2, animation: 'blinkLine 0.8s infinite alternate' }}>
-                                                WINNER
-                                            </Typography>
-                                        )}
-                                        <Typography variant="h3" sx={{ fontWeight: 'bold', color: config.color, textShadow: '0 2px 5px rgba(0,0,0,0.1)', mt: team.isWinner ? 0 : 0 }}>
-                                            {team.totalScore}
-                                        </Typography>
-                                    </Box>
-
-                                    {/* The Dynamic Background Bar */}
-                                    {/* <motion.div
+                                            {/* The Dynamic Background Bar */}
+                                            {/* <motion.div
                                         initial={{ height: '0%' }}
                                         animate={{ height: barHeight }}
                                         transition={{ type: 'spring', stiffness: 40, damping: 12 }}
@@ -320,15 +326,49 @@ export default function LeaderboardDisplay() {
                                         }}
                                     /> */}
 
-                                    {/* Team Name properly positioned at the very bottom */}
-                                    <Typography variant="h6" align="center" sx={{ fontWeight: 'bold', color: 'text.primary', letterSpacing: '1px', textTransform: 'uppercase', mt: 1, lineHeight: 1.2, whiteSpace: 'pre-line' }}>
-                                        {team.name.replace(" ", "\n")}
+                                            {/* Team Name properly positioned at the very bottom */}
+                                            <Typography variant="h6" align="center" sx={{ fontWeight: 'bold', color: 'text.primary', letterSpacing: '1px', textTransform: 'uppercase', mt: 1, lineHeight: 1.2, whiteSpace: 'pre-line' }}>
+                                                {team.name.replace(" ", "\n")}
+                                            </Typography>
+                                        </Box>
+                                    );
+                                })}
+                            </Box>
+                        </Box>
+                    </>
+                ) : (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexGrow: 1, width: '100%', zIndex: 50 }}>
+                        {leaderboard.filter(t => t.isWinner).map(team => {
+                            const config = TEAM_CONFIG[team.name] || { color: '#38bdf8', logo: '⭐' };
+                            return (
+                                <Box key={team._id} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', animation: 'zoomIn 0.8s ease-out' }}>
+                                    <Typography variant="h1" sx={{ fontWeight: 'bold', color: '#ffea00', textShadow: '0 0 20px #ffb300, 0 0 40px #ffb300', mb: 4, fontSize: { xs: '3rem', md: '6rem' }, letterSpacing: 4, animation: 'blinkLine 0.8s infinite alternate' }}>
+                                        WINNER
+                                    </Typography>
+                                    {typeof config.logo === 'string' ? (
+                                        <Typography variant="h1" sx={{ fontSize: '15rem', filter: 'drop-shadow(0px 10px 20px rgba(0,0,0,0.8))' }}>
+                                            {config.logo}
+                                        </Typography>
+                                    ) : (
+                                        <Image
+                                            src={config.logo}
+                                            alt={`${team.name} logo`}
+                                            width={300}
+                                            height={300}
+                                            style={{ filter: 'drop-shadow(0px 10px 20px rgba(0,0,0,0.8))' }}
+                                        />
+                                    )}
+                                    <Typography variant="h2" align="center" sx={{ fontWeight: 'bold', color: 'text.primary', letterSpacing: '4px', textTransform: 'uppercase', mt: 4, mb: 2, fontSize: { xs: '2rem', md: '5rem' } }}>
+                                        {team.name}
+                                    </Typography>
+                                    <Typography variant="h1" sx={{ fontWeight: 'bold', color: config.color, textShadow: '0 5px 15px rgba(0,0,0,0.2)', fontSize: { xs: '4rem', md: '8rem' } }}>
+                                        {team.totalScore}
                                     </Typography>
                                 </Box>
                             );
                         })}
                     </Box>
-                </Box>
+                )}
             </Box>
         </ThemeProvider>
     );
