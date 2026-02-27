@@ -13,7 +13,7 @@ import SvietLogo from '../../Images/Sviet.png';
 import InkSpire from '../../Images/InkSpire_logo.png';
 import Image, { StaticImageData } from 'next/image';
 import axios from 'axios';
-import { BarChart, Bar, ResponsiveContainer, YAxis, XAxis, CartesianGrid, Tooltip, LabelList } from 'recharts';
+import { BarChart, Bar, Cell, ResponsiveContainer, YAxis, XAxis, CartesianGrid, Tooltip, LabelList } from 'recharts';
 import Confetti from 'react-confetti';
 
 const posterTheme = createTheme({
@@ -230,18 +230,30 @@ export default function LeaderboardDisplay() {
                                         </defs>
                                         {leaderboard.map((team, index) => {
                                             const config = TEAM_CONFIG[team.name] || { color: '#38bdf8' };
-                                            const isLeader = team.totalScore === highestScore && highestScore > 0;
-
                                             return (
                                                 <Bar
                                                     key={team._id}
-                                                    className={isLeader ? "leader-line" : ""}
                                                     dataKey={team.name}
-                                                    fill={config.color}
                                                     radius={[4, 4, 0, 0]}
                                                     isAnimationActive={true}
-                                                    style={isLeader ? { filter: 'url(#glow)' } : {}} // Add glow to leader
                                                 >
+                                                    {history.map((entry, historyIndex) => {
+                                                        const highestInRound = Math.max(
+                                                            0,
+                                                            ...leaderboard.map(t => typeof entry[t.name] === 'number' ? entry[t.name] : 0)
+                                                        );
+                                                        const thisScore = typeof entry[team.name] === 'number' ? entry[team.name] : 0;
+                                                        const isRoundWinner = thisScore === highestInRound && highestInRound > 0;
+
+                                                        return (
+                                                            <Cell
+                                                                key={`cell-${historyIndex}`}
+                                                                fill={config.color}
+                                                                className={isRoundWinner ? "leader-line" : ""}
+                                                                style={isRoundWinner ? { filter: 'url(#glow)' } : undefined}
+                                                            />
+                                                        );
+                                                    })}
                                                     <LabelList
                                                         dataKey={team.name}
                                                         position="top"
