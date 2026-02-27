@@ -197,7 +197,7 @@ export default function LeaderboardDisplay() {
                             gap: 2 // Reduced gap to keep tightly packed on 1 screen
                         }}>
                             {/* The Main Graph - Grouped Bar Chart */}
-                            <Box sx={{ width: '100%', height: '40vh', position: 'relative', mt: 1 }}>
+                            <Box sx={{ width: '100%', height: '60vh', position: 'relative', mt: 7 }}>
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={history} margin={{ top: 30, right: 20, left: 0, bottom: 5 }} barGap={4} barSize={20}>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.15)" />
@@ -283,7 +283,7 @@ export default function LeaderboardDisplay() {
                                             {/* Score and Logo (sits immediately on top of the growing bar) */}
                                             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 10, mb: 1 }}>
 
-                                                {typeof config.logo === 'string' ? (
+                                                {/* {typeof config.logo === 'string' ? (
                                                     <Typography variant="h1" className={isLeader ? "leader-line" : ""} sx={{ fontSize: '3rem', filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.8))' }}>
                                                         {config.logo}
                                                     </Typography>
@@ -296,15 +296,15 @@ export default function LeaderboardDisplay() {
                                                         height={60}
                                                         style={{ filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.8))' }}
                                                     />
-                                                )}
+                                                )} */}
                                                 {team.isWinner && (
                                                     <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#ffea00', textShadow: '0 0 10px #ffb300, 0 0 20px #ffb300', mt: 1, letterSpacing: 2, animation: 'blinkLine 0.8s infinite alternate' }}>
                                                         WINNER
                                                     </Typography>
                                                 )}
-                                                <Typography variant="h3" sx={{ fontWeight: 'bold', color: config.color, textShadow: '0 2px 5px rgba(0,0,0,0.1)', mt: team.isWinner ? 0 : 0 }}>
+                                                {/* <Typography variant="h3" sx={{ fontWeight: 'bold', color: config.color, textShadow: '0 2px 5px rgba(0,0,0,0.1)', mt: team.isWinner ? 0 : 0 }}>
                                                     {team.totalScore}
-                                                </Typography>
+                                                </Typography> */}
                                             </Box>
 
                                             {/* The Dynamic Background Bar */}
@@ -323,9 +323,9 @@ export default function LeaderboardDisplay() {
                                     /> */}
 
                                             {/* Team Name properly positioned at the very bottom */}
-                                            <Typography variant="h6" align="center" sx={{ fontWeight: 'bold', color: 'text.primary', letterSpacing: '1px', textTransform: 'uppercase', mt: 1, lineHeight: 1.2, whiteSpace: 'pre-line' }}>
+                                            {/* <Typography variant="h6" align="center" sx={{ fontWeight: 'bold', color: 'text.primary', letterSpacing: '1px', textTransform: 'uppercase', mt: 1, lineHeight: 1.2, whiteSpace: 'pre-line' }}>
                                                 {team.name.replace(" ", "\n")}
-                                            </Typography>
+                                            </Typography> */}
                                         </Box>
                                     );
                                 })}
