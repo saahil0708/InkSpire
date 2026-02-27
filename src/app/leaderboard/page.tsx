@@ -14,7 +14,7 @@ import InkSpire from '../../Images/InkSpire_logo.png';
 import Image, { StaticImageData } from 'next/image';
 import axios from 'axios';
 import { BarChart, Bar, ResponsiveContainer, YAxis, XAxis, CartesianGrid, Tooltip, LabelList } from 'recharts';
-
+import Confetti from 'react-confetti';
 
 const posterTheme = createTheme({
     palette: {
@@ -40,6 +40,14 @@ export default function LeaderboardDisplay() {
     const [leaderboard, setLeaderboard] = useState<any[]>([]);
     const [currentTime, setCurrentTime] = useState<Date | null>(null);
     const [history, setHistory] = useState<any[]>([]);
+    const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+
+    useEffect(() => {
+        setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+        const handleResize = () => setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         setCurrentTime(new Date());
@@ -76,11 +84,19 @@ export default function LeaderboardDisplay() {
     // Determine the max score to scale the bars properly.
     const maxScore = Math.max(10, ...leaderboard.map(t => t.totalScore));
     const highestScore = Math.max(0, ...leaderboard.map(t => t.totalScore));
-
-
+    const hasWinner = leaderboard.some(t => t.isWinner);
 
     return (
         <ThemeProvider theme={posterTheme}>
+            {hasWinner && windowSize.width > 0 && (
+                <Confetti
+                    width={windowSize.width}
+                    height={windowSize.height}
+                    numberOfPieces={500}
+                    gravity={0.15}
+                    style={{ zIndex: 9999, position: 'fixed' }}
+                />
+            )}
             <style>{`
                 .leader-line {
                     animation: blinkLine 1s infinite alternate !important;
@@ -185,10 +201,11 @@ export default function LeaderboardDisplay() {
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.15)" />
                                 <XAxis
                                     dataKey="time"
-                                    tick={{ fill: '#4e342e', fontWeight: 'bold' }}
+                                    tick={{ fill: '#4e342e', fontWeight: 'bold', fontSize: 12 }}
                                     tickLine={false}
                                     axisLine={{ stroke: '#4e342e', strokeWidth: 2 }}
                                     dy={10}
+                                    interval={0}
                                 />
                                 <YAxis
                                     tick={{ fill: '#4e342e', fontWeight: 'bold' }}
@@ -278,7 +295,12 @@ export default function LeaderboardDisplay() {
                                                 style={{ filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.8))' }}
                                             />
                                         )}
-                                        <Typography variant="h3" sx={{ fontWeight: 'bold', color: config.color, textShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
+                                        {team.isWinner && (
+                                            <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#ffea00', textShadow: '0 0 10px #ffb300, 0 0 20px #ffb300', mt: 1, letterSpacing: 2, animation: 'blinkLine 0.8s infinite alternate' }}>
+                                                WINNER
+                                            </Typography>
+                                        )}
+                                        <Typography variant="h3" sx={{ fontWeight: 'bold', color: config.color, textShadow: '0 2px 5px rgba(0,0,0,0.1)', mt: team.isWinner ? 0 : 0 }}>
                                             {team.totalScore}
                                         </Typography>
                                     </Box>

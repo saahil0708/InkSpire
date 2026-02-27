@@ -165,6 +165,16 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleToggleWinner = async (teamId: string) => {
+        if (!window.confirm("Are you sure you want to toggle the winner status for this team?")) return;
+        try {
+            await axios.post(`${API_BASE_URL}/winner/${teamId}`);
+            fetchInitialData();
+        } catch (error) {
+            console.error("Error toggling winner:", error);
+        }
+    };
+
     const getScoreForTeam = (teamId: string) => {
         if (tempScores[teamId] !== undefined) return tempScores[teamId];
         const scoreDoc = scores.find(s => s.teamId?._id === teamId || s.teamId === teamId);
@@ -174,6 +184,22 @@ export default function AdminDashboard() {
     const columns: GridColDef[] = [
         { field: 'name', headerName: 'Team Name', flex: 1 },
         { field: 'totalScore', headerName: 'Total Score (Global)', flex: 1, align: 'center', headerAlign: 'center' },
+        {
+            field: 'actions',
+            headerName: 'Declare Winner',
+            flex: 1,
+            align: 'center',
+            headerAlign: 'center',
+            renderCell: (params: GridRenderCellParams) => (
+                <Button
+                    variant={params.row.isWinner ? "contained" : "outlined"}
+                    color={params.row.isWinner ? "success" : "primary"}
+                    onClick={() => handleToggleWinner(params.row.id as string)}
+                >
+                    {params.row.isWinner ? "Winner Declared 🏆" : "Declare Winner"}
+                </Button>
+            )
+        }
     ];
 
     const roundColumns: GridColDef[] = [
@@ -279,7 +305,7 @@ export default function AdminDashboard() {
                         </Box>
                         <Paper sx={{ height: 600, width: '100%' }}>
                             <DataGrid
-                                rows={teams.map(t => ({ id: t._id, name: t.name, totalScore: t.totalScore }))}
+                                rows={teams.map(t => ({ id: t._id, name: t.name, totalScore: t.totalScore, isWinner: t.isWinner }))}
                                 columns={columns}
                                 disableRowSelectionOnClick
                                 sx={{ '& .MuiDataGrid-root': { bgcolor: 'background.paper', color: 'text.primary' } }}

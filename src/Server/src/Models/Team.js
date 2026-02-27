@@ -9,6 +9,10 @@ const teamSchema = new mongoose.Schema({
     totalScore: {
         type: Number,
         default: 0
+    },
+    isWinner: {
+        type: Boolean,
+        default: false
     }
 }, { timestamps: true });
 

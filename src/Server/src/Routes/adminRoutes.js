@@ -83,6 +83,21 @@ router.post("/teams", async (req, res) => {
     }
 });
 
+router.post("/winner/:teamId", async (req, res) => {
+    try {
+        const teamId = req.params.teamId;
+        const team = await Team.findById(teamId);
+        if (!team) {
+            return res.status(404).json({ message: "Team not found" });
+        }
+        team.isWinner = !team.isWinner;
+        await team.save();
+        res.json({ message: "Winner status toggled", team });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // --- Scores ---
 router.get("/scores/:roundId", async (req, res) => {
     const { roundId } = req.params;
