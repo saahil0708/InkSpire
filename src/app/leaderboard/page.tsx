@@ -345,36 +345,84 @@ export default function LeaderboardDisplay() {
                         </Box>
                     </>
                 ) : (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexGrow: 1, width: '100%', zIndex: 50 }}>
-                        {leaderboard.filter(t => t.isWinner).map(team => {
-                            const config = TEAM_CONFIG[team.name] || { color: '#38bdf8', logo: '⭐' };
-                            return (
-                                <Box key={team._id} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', animation: 'zoomIn 0.8s ease-out' }}>
-                                    <Typography variant="h1" sx={{ fontWeight: 'bold', color: '#ffea00', textShadow: '0 0 20px #ffb300, 0 0 40px #ffb300', mb: 4, fontSize: { xs: '3rem', md: '6rem' }, letterSpacing: 4, animation: 'blinkLine 0.8s infinite alternate' }}>
-                                        WINNER
-                                    </Typography>
-                                    {typeof config.logo === 'string' ? (
-                                        <Typography variant="h1" sx={{ fontSize: '15rem', filter: 'drop-shadow(0px 10px 20px rgba(0,0,0,0.8))' }}>
-                                            {config.logo}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexGrow: 1, width: '100%', zIndex: 50, pt: 4, pb: 4 }}>
+                        {/* Overall Winners */}
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 6, mb: 6 }}>
+                            {leaderboard.filter(t => t.isWinner).map(team => {
+                                const config = TEAM_CONFIG[team.name] || { color: '#38bdf8', logo: '⭐' };
+                                return (
+                                    <Box key={team._id} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', animation: 'zoomIn 0.8s ease-out' }}>
+                                        <Typography variant="h1" sx={{ fontWeight: 'bold', color: '#ffea00', textShadow: '0 0 20px #ffb300, 0 0 40px #ffb300', mb: 2, fontSize: { xs: '2.5rem', md: '5rem' }, letterSpacing: 4, animation: 'blinkLine 0.8s infinite alternate', textAlign: 'center' }}>
+                                            OVERALL WINNER
                                         </Typography>
-                                    ) : (
-                                        <Image
-                                            src={config.logo}
-                                            alt={`${team.name} logo`}
-                                            width={300}
-                                            height={300}
-                                            style={{ filter: 'drop-shadow(0px 10px 20px rgba(0,0,0,0.8))' }}
-                                        />
-                                    )}
-                                    <Typography variant="h2" align="center" sx={{ fontWeight: 'bold', color: 'text.primary', letterSpacing: '4px', textTransform: 'uppercase', mt: 4, mb: 2, fontSize: { xs: '2rem', md: '5rem' } }}>
-                                        {team.name}
-                                    </Typography>
-                                    <Typography variant="h1" sx={{ fontWeight: 'bold', color: config.color, textShadow: '0 5px 15px rgba(0,0,0,0.2)', fontSize: { xs: '4rem', md: '8rem' } }}>
-                                        {team.totalScore}
-                                    </Typography>
-                                </Box>
-                            );
-                        })}
+                                        {typeof config.logo === 'string' ? (
+                                            <Typography variant="h1" sx={{ fontSize: '10rem', filter: 'drop-shadow(0px 10px 20px rgba(0,0,0,0.8))' }}>
+                                                {config.logo}
+                                            </Typography>
+                                        ) : (
+                                            <Image
+                                                src={config.logo}
+                                                alt={`${team.name} logo`}
+                                                width={200}
+                                                height={200}
+                                                style={{ filter: 'drop-shadow(0px 10px 20px rgba(0,0,0,0.3))' }}
+                                            />
+                                        )}
+                                        <Typography variant="h2" align="center" sx={{ fontWeight: 'bold', color: 'text.primary', letterSpacing: '4px', textTransform: 'uppercase', mt: 2, mb: 1, fontSize: { xs: '1.5rem', md: '3.5rem' } }}>
+                                            {team.name}
+                                        </Typography>
+                                        <Typography variant="h1" sx={{ fontWeight: 'bold', color: config.color, textShadow: '0 5px 15px rgba(0,0,0,0.2)', fontSize: { xs: '3rem', md: '6rem' }, lineHeight: 1 }}>
+                                            {team.totalScore}
+                                        </Typography>
+                                    </Box>
+                                );
+                            })}
+                        </Box>
+
+                        {/* Round Winners Row */}
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 4, width: '90%', animation: 'zoomIn 1.4s ease-out' }}>
+                            {history.map((round) => {
+                                // Calculate highest score in this round
+                                const highestInRound = Math.max(0, ...leaderboard.map(t => typeof round[t.name] === 'number' ? round[t.name] : 0));
+                                if (highestInRound === 0) return null; // Skip if no scores yet
+
+                                const roundWinners = leaderboard.filter(t => round[t.name] === highestInRound);
+
+                                return (
+                                    <Box key={round.time} sx={{
+                                        display: 'flex', flexDirection: 'column', alignItems: 'center',
+                                        bgcolor: 'rgba(255,255,255,0.4)', p: 2, borderRadius: 4,
+                                        boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+                                        border: '1px solid rgba(0,0,0,0.05)',
+                                        minWidth: '220px'
+                                    }}>
+                                        <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#4e342e', mb: 2, textTransform: 'uppercase', borderBottom: '2px solid rgba(0,0,0,0.1)', pb: 1, width: '100%', textAlign: 'center' }}>
+                                            {round.time}
+                                        </Typography>
+                                        <Box sx={{ display: 'flex', gap: 3, justifyContent: 'center', width: '100%' }}>
+                                            {roundWinners.map(w => {
+                                                const wConfig = TEAM_CONFIG[w.name] || { color: '#38bdf8', logo: '⭐' };
+                                                return (
+                                                    <Box key={w._id} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                        {typeof wConfig.logo === 'string' ? (
+                                                            <Typography sx={{ fontSize: '3rem' }}>{wConfig.logo}</Typography>
+                                                        ) : (
+                                                            <Image src={wConfig.logo} alt={w.name} width={70} height={70} style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.15))' }} />
+                                                        )}
+                                                        <Typography variant="h6" align="center" sx={{ mt: 1, fontWeight: 'bold', color: wConfig.color, fontSize: '1rem', maxWidth: '100px', lineHeight: 1.2 }}>
+                                                            {w.name}
+                                                        </Typography>
+                                                        <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#5d4037', mt: 0.5 }}>
+                                                            {highestInRound} pts
+                                                        </Typography>
+                                                    </Box>
+                                                )
+                                            })}
+                                        </Box>
+                                    </Box>
+                                );
+                            })}
+                        </Box>
                     </Box>
                 )}
             </Box>

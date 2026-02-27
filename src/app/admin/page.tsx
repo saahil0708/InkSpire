@@ -82,9 +82,9 @@ export default function AdminDashboard() {
         setTabIndex(0);
     };
 
-    const fetchInitialData = async () => {
+    const fetchInitialData = async (showLoading = true) => {
         try {
-            setLoading(true);
+            if (showLoading) setLoading(true);
             const [roundsRes, teamsRes] = await Promise.all([
                 axios.get(`${API_BASE_URL}/rounds`),
                 axios.get(`${API_BASE_URL}/teams`)
@@ -94,7 +94,7 @@ export default function AdminDashboard() {
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
-            setLoading(false);
+            if (showLoading) setLoading(false);
         }
     };
 
@@ -109,13 +109,22 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         if (isAuthenticated) {
-            fetchInitialData();
+            fetchInitialData(true);
+            const interval = setInterval(() => {
+                fetchInitialData(false);
+            }, 5000);
+            return () => clearInterval(interval);
         }
     }, [isAuthenticated]);
 
     useEffect(() => {
         if (tabIndex > 0 && rounds[tabIndex - 1]) {
-            fetchScoresForRound(rounds[tabIndex - 1]._id);
+            const roundId = rounds[tabIndex - 1]._id;
+            fetchScoresForRound(roundId);
+            const interval = setInterval(() => {
+                fetchScoresForRound(roundId);
+            }, 5000);
+            return () => clearInterval(interval);
         }
     }, [tabIndex, rounds]);
 
